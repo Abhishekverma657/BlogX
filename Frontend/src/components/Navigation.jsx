@@ -20,8 +20,11 @@ const Navigation = () => {
   return (
     <div className="pl-10   h-full relative  ">
       {/* Home Link */}
-       <div className=' h-14 w-full '>
-        <img src="src/assets/public/bloxxlogo.png" alt="" className=' w-full h-full object-cover bg-transparent mt-2' />
+       <div className=' h-14 w-full  flex  items-center gap-2 text-2xl '>
+        <div className='h-12 w-12 rounded-full bg-white flex items-center  text-slate-800 justify-center font-bold text-3xl'>
+          B
+        </div>
+         BlogX
        </div>
     
       <div
