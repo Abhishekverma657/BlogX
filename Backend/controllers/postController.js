@@ -1,47 +1,53 @@
 import postModel from "../models/post.model.js";
 import userModel from "../models/user.model.js";
 
-export const createPost=async(req , res)=>{
-    try{
-        const {title,description}=req.body;
-        if(!title){
-            return res.status(400).json({message:"Title is required"});
-        }
-        const userId=req.user.id
-         console.log(userId)
-      
 
 
-        const newPost=await postModel({
-            title,
-            description,
-            userId,
+export const createPost = async (req, res) => {
+  try {
+      const { title, description, mentions } = req.body; // `mentions` contains an array of user IDs
+      if (!title) {
+          return res.status(400).json({ message: "Title is required" });
+      }
 
-        })
-        await newPost.save();
-        // console.log(newPost._id)
-        
+      const userId = req.user.id;
+      const newPost = new postModel({
+          title,
+          description,
+          userId,
+          mentions: mentions || [],
+      });
+
+      await newPost.save();
+
+      // Update the post creator's profile
+      await userModel.findByIdAndUpdate(userId, { $push: { Post: newPost._id } });
+
+      // Update mentioned users' profiles
+      if (mentions && mentions.length > 0) {
+          await userModel.updateMany(
+              { _id: { $in: mentions } },
+              { $push: { MentionedPosts: { postId: newPost._id, mentionedBy: userId } } }
+          );
+      }
+
+      res.status(201).json({
+          message: "Post created successfully",
+          post: newPost,
+      });
+  } catch (e) {
+      console.error(e);
+      res.status(500).json({ message: e.message });
+  }
+};
 
 
 
 
 
-         await userModel.findByIdAndUpdate(userId,{$push:{Post:newPost._id}})
-
-        res.status(201).json({
-            message:"Post created successfully",
-            post:newPost
-
-        });
 
 
-    }catch(e){
-        console.log(e)
-        res.status(500).json({ message: e.message });
-
-
-    }
-}
+ 
 
  export const likePost=async(req, res)=>{
     try{
@@ -163,27 +169,93 @@ export const createPost=async(req , res)=>{
     }
   };
 
-   export const getAllPosts=async(req, res)=>{
-    try{
-      const posts = await postModel
-      .find()
-      .populate({
-        path: "userId",
-        select: "name email", // Fetch name and email of post owner
-      })
-      .populate({
-        path: "comments.userId",
-        select: "name", // Fetch name of comment users
-      });
-        res.status(200).json({
-            message: "All posts fetched successfully.",
-            posts: posts,
+  //  export const getAllPosts=async(req, res)=>{
+  //   try{
+  //     const posts = await postModel
+  //     .find()
+  //     .populate({
+  //       path: "userId",
+  //       select: "name email", // Fetch name and email of post owner
+  //     })
+  //     .populate({
+  //       path: "comments.userId",
+  //       select: "name", // Fetch name of comment users
+  //     });
+  //       res.status(200).json({
+  //           message: "All posts fetched successfully.",
+  //           posts: posts,
+  //           });
+
+
+
+  //   }catch(e){
+  //       console.error(e);
+  //       res.status(500).json({ message: e.message });
+  //   }
+  //  }
+
+
+
+  export const getAllPosts = async (req, res) => {
+    try {
+        const posts = await postModel
+            .find()
+            .populate({
+                path: "userId",
+                select: "name email",
+            })
+            .populate({
+                path: "mentions",
+                select: "name email",
+            })
+            .populate({
+                path: "comments.userId",
+                select: "name",
             });
 
-
-
-    }catch(e){
+        res.status(200).json({
+            message: "All posts fetched successfully",
+            posts: posts,
+        });
+    } catch (e) {
         console.error(e);
         res.status(500).json({ message: e.message });
     }
-   }
+};
+
+export const deletePost = async (req, res) => {
+  try {
+    const { postId } = req.params; // ID of the post to delete
+    const userId = req.user.id; // ID of the authenticated user
+
+    // Find the post
+    const post = await postModel.findById(postId);
+    if (!post) {
+      return res.status(404).json({ message: "Post not found." });
+    }
+
+    // Check if the user is the owner of the post
+    if (post.userId.toString() !== userId) {
+      return res.status(403).json({ message: "You are not authorized to delete this post." });
+    }
+
+    // Remove the post
+    await postModel.findByIdAndDelete(postId);
+
+    // Remove the post reference from the user's Post array
+    await userModel.findByIdAndUpdate(userId, { $pull: { Post: postId } });
+
+    // Remove the post from mentioned users' MentionedPosts array
+    if (post.mentions && post.mentions.length > 0) {
+      await userModel.updateMany(
+        { _id: { $in: post.mentions } },
+        { $pull: { MentionedPosts: { postId: postId } } }
+      );
+    }
+
+    res.status(200).json({ message: "Post deleted successfully." });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ message: e.message });
+  }
+};

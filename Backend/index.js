@@ -6,6 +6,7 @@ import mongoose from 'mongoose'
 import connectDB from './DB/db.js'
 import Userrouter from './routes/user.routes.js'
 import postRouter  from  './routes/post.routes.js'
+import aiRouter from './routes/ai.routes.js'
 import cors from 'cors'
  
 
@@ -32,6 +33,7 @@ app.use(cors({
     })
      app.use("/api/user",Userrouter)
      app.use("/api/post", postRouter)
+     app.use("/api/ai",aiRouter)
 
 
     app.listen(7000,()=>{

@@ -174,7 +174,7 @@ const Friends = () => {
                     : handleFollow(friend._id)
                 }
                 className={`${
-                  isLoading ? 'bg-gray-400' : 'bg-blue-500'
+                  isLoading ? 'bg-gray-400' :  ` ${isFollowed?'bg-red-500':'bg-blue-500'} `
                 } text-white px-4 py-1 rounded-full font-semibold transition-all duration-300 transform hover:scale-105`}
                 disabled={isLoading}
               >

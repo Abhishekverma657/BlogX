@@ -1,57 +1,53 @@
 import React, { useContext, useEffect, useState } from 'react';
-import axios from 'axios'
+import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { UserContext } from '../context/AuthContext';
 
 const Login = () => {
-    const {user , token, setUser ,setToken}= useContext(UserContext)
-     const [email, setEmail] = useState('')
-   
-    //   console.log(token)
-      
-     const [password, setPassword] = useState('')
-      const navigate= useNavigate();
-      useEffect(()=>{
-        if(token){
-            navigate('/')
-            }
-      })
-       
-       
-      const Subbmithandler = async(e)=>{
-        e.preventDefault()
-      
-        try{
+  const { user, token, setUser, setToken } = useContext(UserContext);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false); // Loading state
+  const navigate = useNavigate();
 
+  useEffect(() => {
+    if (token) {
+      navigate('/');
+    }
+  }, [token, navigate]);
+
+  const Subbmithandler = async (e) => {
+    e.preventDefault();
+    setLoading(true); // Start loading spinner
+
+    try {
+      const res = await axios.post('http://localhost:7000/api/user/login', {
+        email: email,
+        password: password,
+      });
+
+      if (res.status === 200) {
         
-        const res = await axios.post('http://localhost:7000/api/user/login', {
-            email: email,
-            password: password
-            })
-             if(res.status===200){
-                console.log(res.data)
-                setUser(res.data)
+        setUser(res.data);
+        setToken(res.data.token);
 
-                   setToken(res.data.token);
-               
-                localStorage.setItem('token', res.data.token)
-                localStorage.setItem('user', JSON.stringify(res.data));
-                
-                toast.success(res.data.message)
-                  navigate('/')
-             }
-             else{
-                console.log("error")
-                toast.error(res.data.message)
-             }
-            } catch(e){
-                console.log(e)
-                toast.error(e.response.data.message)
+        localStorage.setItem('token', res.data.token);
+        localStorage.setItem('user', JSON.stringify(res.data));
 
-            }
-
+        toast.success(res.data.message);
+        navigate('/');
+      } else {
+        toast.error(res.data.message);
       }
+    } catch (e) {
+      console.log(e);
+      toast.error(e.response?.data?.message || 'Something went wrong');
+    } finally {
+      setLoading(false); // Stop loading spinner
+    }
+  };
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-900">
       <div className="w-full max-w-md p-6 bg-gray-800 rounded-lg shadow-md">
@@ -91,21 +87,29 @@ const Login = () => {
 
           {/* Login Button */}
           <button
-                 onClick={Subbmithandler}
+            onClick={Subbmithandler}
             type="submit"
-            className="w-full py-2 bg-blue-500 hover:bg-blue-700 text-white font-semibold rounded-lg transition duration-300 ease-in-out"
+            className={`w-full py-2 items-center font-semibold rounded-lg transition duration-300 ease-in-out ${
+              loading
+                ? 'bg-gray-500 cursor-not-allowed'
+                : 'bg-green-500 hover:bg-green-700 text-white'
+            }`}
+            disabled={loading} // Disable button during loading
           >
-            Login
+            {loading ? (
+              <div className="flex justify-center items-center">
+                <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-white border-opacity-50"></div>
+              </div>
+            ) : (
+              'Login'
+            )}
           </button>
         </form>
 
         {/* Create Account Link */}
         <p className="text-gray-300 text-sm mt-4 text-center">
           Don’t have an account?{' '}
-          <a
-            href="/signup"
-            className="text-blue-400 hover:underline"
-          >
+          <a href="/signup" className="text-blue-400 hover:underline">
             Create one
           </a>
         </p>

@@ -9,7 +9,7 @@ import { format } from "date-fns";
 const Feed = () => {
   const [posts, setPosts] = useState([]);
   const { user } = useContext(UserContext);
-//    console.log(user)
+
  
   const [commentInput, setCommentInput] = useState(''); // To manage comment input per post
   const [activePostId, setActivePostId] = useState(null); // To toggle comment sections
@@ -20,7 +20,7 @@ const Feed = () => {
       try {
         const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/post/get-all-post`);
         if (res.status === 200) {
-             console.log(res.data)
+             
           setPosts(res.data.posts.reverse());
         }
       } catch (error) {
@@ -57,7 +57,7 @@ const Feed = () => {
 
         })
          if(res.status===200){
-            console.log(res.data)
+            
             setPosts((prevPosts) =>
                 prevPosts.map((post) =>
                   post._id === postId
@@ -98,7 +98,7 @@ const Feed = () => {
 
         })
          if(res.status===200){
-            console.log(res.data)
+            
             setPosts((prevPosts) =>
                 prevPosts.map((post) =>
                   post._id === postId
@@ -148,7 +148,7 @@ const Feed = () => {
       );
       if (res.status === 201) {
         
-         console.log(res.data)
+       
          toast.success(res.data.message)
          setPosts((prevPosts) =>
             prevPosts.map((post) =>
@@ -175,7 +175,7 @@ const Feed = () => {
     return format(new Date(isoDate), " MMMM dd, yyyy, hh:mm a");
   };
   const addNewPost = (newPost) => {
-    console.log(newPost)
+   
     setPosts((prevPosts) =>  [  newPost,...prevPosts ]); // Add new post to the top
   };
 
@@ -193,7 +193,7 @@ const Feed = () => {
           >
             {/* Post Header */}
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-blue-500 rounded-full flex justify-center items-center text-white font-bold">
+              <div className="w-10 h-10 bg-blue-500 rounded-full flex justify-center items-center text-white font-sans">
                  {post.userId.name ? post.userId.name.charAt(0) : "U"}
               </div>
               <h2 className="font-semibold">{post.userId.name}</h2>
@@ -201,7 +201,17 @@ const Feed = () => {
 
             {/* Post Content */}
             <div className="mt-3">
-              <h3 className="text-xl font-serif text-blue-400">{post.title}</h3>
+            <h3 className="text-xl font-serif text-blue-200">
+  {post.title.split(/(\@\w+)/).map((part, index) =>
+    part.startsWith('@') ? (
+      <span key={index} className="text-blue-500 font-bold">
+        {part}
+      </span>
+    ) : (
+      part
+    )
+  )}
+</h3>
             
             </div>
 
