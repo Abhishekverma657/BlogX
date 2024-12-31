@@ -107,7 +107,7 @@ export const createPost = async (req, res) => {
   export const addComment = async (req, res) => {
     try {
       const { postId } = req.params; 
-      const { text } = req.body; 
+      const { text } =   req.body; 
   
       if (!text) {
         return res.status(400).json({ message: "Comment text is required." });
@@ -134,7 +134,7 @@ export const createPost = async (req, res) => {
   
       res.status(201).json({
         message: "Comment added successfully.",
-        comments: updatedPost.comments,
+        comments: post.comments,
       });
     } catch (e) {
       console.error(e);
