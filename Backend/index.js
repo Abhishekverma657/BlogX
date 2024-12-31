@@ -18,7 +18,7 @@ const app = express();
 // Middleware
 app.use(
   cors({
-    origin: 'http://localhost:5173', // Frontend origin
+    origin: 'https://blogx-1ltm.onrender.com', // Frontend origin
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
     credentials: true, // Allow cookies if needed
   })

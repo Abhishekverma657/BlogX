@@ -22,7 +22,7 @@ const Login = () => {
     setLoading(true); // Start loading spinner
 
     try {
-      const res = await axios.post('http://localhost:7000/api/user/login', {
+      const res = await axios.post('https://blogx-1ltm.onrender.com/api/user/login', {
         email: email,
         password: password,
       });
